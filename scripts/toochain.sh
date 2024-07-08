@@ -75,7 +75,7 @@ build_beaglebone() {
     # $CROSSTOOL_NG_PATH/bin/ct-ng menuconfig
     cp ../scripts/.config_bbb $CROSSTOOL_NG_PATH/.config
     $CROSSTOOL_NG_PATH/bin/ct-ng build
-    echo "export PATH=~/x-tools/arm-cortex_a8-linux-gnueabi/bin:\$PATH" >> ~/.zsh_profile
+    echo "export PATH=~/x-tools/arm-cortex_a8-linux-gnueabihf/bin:\$PATH" >> ~/.zsh_profile
 }
 
 # Function to build crosstool-ng for both
