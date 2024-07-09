@@ -7,6 +7,9 @@ set -e
 cleanup() {
     unset MAKEFLAGS
     unset CROSSTOOL_NG_PATH
+    unset CURRENT_SHELL
+    unset EXPORT_PATH_BBB
+    unset EXPORT_PATH_QEMU
     echo "Cleaned up environment variables."
 }
 
@@ -27,6 +30,13 @@ export MAKEFLAGS="-j$(nproc)"
 
 # Clone and install crosstool-ng
 CROSSTOOL_NG_PATH=../crosstool-ng
+# Determine the current shell
+CURRENT_SHELL=$(echo $SHELL)
+
+# Path to be exported
+EXPORT_PATH_BBB="export PATH=~/x-tools/arm-cortex_a8-linux-gnueabihf/bin:\$PATH"
+EXPORT_PATH_QEMU="export PATH=~/x-tools/arm-unknown-linux-gnueabi/bin:\$PATH"
+
 # Check if the crosstool-ng directory exists and remove it if it does
 if [ -d "$CROSSTOOL_NG_PATH" ]; then
     echo "Removing existing crosstool-ng directory..."
@@ -64,7 +74,15 @@ build_qemu() {
     # Build the toolchain
     $CROSSTOOL_NG_PATH/bin/ct-ng build
     # Add the toolchain to the system PATH
-    echo "export PATH=~/x-tools/arm-unknown-linux-gnueabi/bin:\$PATH" >> ~/.zsh_profile
+    if [[ $CURRENT_SHELL == *"zsh"* ]]; then
+        echo $EXPORT_PATH_QEMU >> ~/.zshrc
+        echo "Path exported to .zshrc"
+    elif [[ $CURRENT_SHELL == *"bash"* ]]; then
+        echo $EXPORT_PATH_QEMU >> ~/.bashrc
+        echo "Path exported to .bashrc"
+    else
+        echo "Unsupported shell: $CURRENT_SHELL"
+    fi
 }
 
 # Function to build crosstool-ng for BeagleBone Black
@@ -75,7 +93,15 @@ build_beaglebone() {
     # $CROSSTOOL_NG_PATH/bin/ct-ng menuconfig
     cp ../scripts/.config_bbb $CROSSTOOL_NG_PATH/.config
     $CROSSTOOL_NG_PATH/bin/ct-ng build
-    echo "export PATH=~/x-tools/arm-cortex_a8-linux-gnueabihf/bin:\$PATH" >> ~/.zsh_profile
+    if [[ $CURRENT_SHELL == *"zsh"* ]]; then
+        echo $EXPORT_PATH_BBB >> ~/.zshrc
+        echo "Path exported to .zshrc"
+    elif [[ $CURRENT_SHELL == *"bash"* ]]; then
+        echo $EXPORT_PATH_BBB >> ~/.bashrc
+        echo "Path exported to .bashrc"
+    else
+        echo "Unsupported shell: $CURRENT_SHELL"
+    fi
 }
 
 # Function to build crosstool-ng for both

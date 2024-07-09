@@ -8,6 +8,7 @@ cleanup() {
     unset MAKEFLAGS
     unset CROSS_COMPILE
     unset ARCH
+    unset KBUILD_OUTPUT
     echo "Cleaned up environment variables."
 }
 
@@ -45,9 +46,6 @@ build_qemu() {
     make distclean
     make qemu_arm_defconfig
     make
-    # # copy artifacts
-    # mkdir -p ../u-boot-bin/qemu
-    # cp u-boot{,.bin,.map,.srec} ../u-boot-bin/qemu
 }
 
 # Function to build u-boot for BeagleBone Black
@@ -62,9 +60,6 @@ build_beaglebone() {
     make distclean
     make am335x_evm_defconfig
     make
-    # # copy artifacts
-    # mkdir -p ../u-boot-bin/beaglebone_black
-    # cp u-boot{,.bin,.map,.img,.srec} MLO ../u-boot-bin/beaglebone_black
 }
 
 # Function to build u-boot for both
