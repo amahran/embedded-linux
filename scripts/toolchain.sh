@@ -16,13 +16,32 @@ cleanup() {
 # Trap the EXIT signal to call the cleanup function
 trap cleanup EXIT
 
+# change to current directory
+cd "$( dirname "${BASH_SOURCE[0]}" )"
+
+# Define the options
+echo "Build crosstool-ng for:"
+options=("QEMU" "BeagleBone Black" "both")
+
+# Display the menu and prompt for a choice
+echo "Please select an option to build crosstool-ng:"
+select opt in "${options[@]}"; do
+    if [[ -n "$opt" ]]; then
+        break
+    else
+        echo "Invalid option. Please try again."
+    fi
+done
+
 # Update and upgrade the system
 sudo apt update && sudo apt -y upgrade
+# sudo pacman -Syu --noconfirm
 
 # Install pre-requisites
 sudo apt install -y autoconf automake bison bzip2 cmake flex g++ gawk gcc gettext \
     git gperf help2man libncurses5-dev libstdc++6 libtool libtool-bin make \
     patch python3-dev rsync texinfo unzip wget xz-utils
+# sudo pacman -S --noconfirm base-devel git help2man python unzip wget audit rsync
 
 # Set the number of parallel jobs for make
 export MAKEFLAGS="-j$(nproc)"
@@ -56,10 +75,6 @@ git checkout crosstool-ng-1.26.0
 ./configure --prefix=${PWD}
 make
 sudo make install
-
-# Define the options
-echo "Build crosstool-ng for:"
-options=("QEMU" "BeagleBone Black" "both")
 
 # Function to build crosstool-ng for QEMU
 build_qemu() {
@@ -111,25 +126,16 @@ build_both() {
     build_beaglebone
 }
 
-# Display the menu and prompt for a choice
-echo "Please select an option to build crosstool-ng:"
-select opt in "${options[@]}"; do
-    case $REPLY in
-        1)
-            build_qemu
-            break
-            ;;
-        2)
-            build_beaglebone
-            break
-            ;;
-        3)
-            build_both
-            break
-            ;;
-        *)
-            echo "Invalid option. Please try again."
-            ;;
-    esac
-done
+# REPLY is written the nummeric selection by the command 'select'
+case $REPLY in
+    1)
+        build_qemu
+        ;;
+    2)
+        build_beaglebone
+        ;;
+    3)
+        build_both
+        ;;
+esac
 
