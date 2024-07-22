@@ -15,6 +15,20 @@ cleanup() {
 # Trap the EXIT signal to call the cleanup function
 trap cleanup EXIT
 
+# change to current directory
+cd "$( dirname "${BASH_SOURCE[0]}" )"
+
+# Define the options
+options=("QEMU" "BeagleBone Black" "both")
+# Display the menu and prompt for a choice
+echo "Please select an option to build u-boot:"
+select opt in "${options[@]}"; do
+    if [[ -n "$opt" ]]; then
+        break
+    else
+        echo "Invalid option. Please try again."
+    fi
+done
 
 # Set the number of parallel jobs for make
 export MAKEFLAGS="-j$(nproc)"
@@ -30,10 +44,6 @@ git clone git://git.denx.de/u-boot.git $UBOOT_PATH
 cd $UBOOT_PATH
 git checkout v2024.07
 
-# Define the options
-echo "Build u-boot for:"
-options=("QEMU" "BeagleBone Black" "both")
-
 # Function to build u-boot for QEMU
 build_qemu() {
     echo "Building u-boot for QEMU..."
@@ -45,6 +55,7 @@ build_qemu() {
     export KBUILD_OUTPUT=../u-boot-build/qemu
     make distclean
     make qemu_arm_defconfig
+    patch -p0 -d $KBUILD_OUTPUT < ../patches/uboot/config.patch
     make
 }
 
@@ -59,6 +70,7 @@ build_beaglebone() {
     export KBUILD_OUTPUT=../u-boot-build/beaglebone_black
     make distclean
     make am335x_evm_defconfig
+    patch -p0 -d $KBUILD_OUTPUT < ../patches/uboot/config.patch
     make
 }
 
@@ -69,25 +81,16 @@ build_both() {
     build_beaglebone
 }
 
-# Display the menu and prompt for a choice
-echo "Please select an option to build u-boot:"
-select opt in "${options[@]}"; do
-    case $REPLY in
-        1)
-            build_qemu
-            break
-            ;;
-        2)
-            build_beaglebone
-            break
-            ;;
-        3)
-            build_both
-            break
-            ;;
-        *)
-            echo "Invalid option. Please try again."
-            ;;
-    esac
-done
+# REPLY is written the nummeric selection by the command 'select'
+case $REPLY in
+    1)
+        build_qemu
+        ;;
+    2)
+        build_beaglebone
+        ;;
+    3)
+        build_both
+        ;;
+esac
 
