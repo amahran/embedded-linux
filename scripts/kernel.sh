@@ -30,6 +30,15 @@ select opt in "${options[@]}"; do
     fi
 done
 
+if [ -f /etc/os-release ]; then
+  . /etc/os-release
+  case "$ID" in
+    arch|manjaro)
+      # Install pre-requisites
+      sudo pacman -S --noconfirm bc
+      ;;
+  esac
+fi
 # Set the number of parallel jobs for make
 export MAKEFLAGS="-j$(nproc)"
 

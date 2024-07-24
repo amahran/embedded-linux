@@ -40,7 +40,7 @@ if [ -d "$UBOOT_PATH" ]; then
     echo "Removing existing U-Boot directory..."
     sudo rm -rf $UBOOT_PATH
 fi
-git clone git://git.denx.de/u-boot.git $UBOOT_PATH
+git clone https://source.denx.de/u-boot/u-boot.git $UBOOT_PATH
 cd $UBOOT_PATH
 git checkout v2024.07
 
