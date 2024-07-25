@@ -48,6 +48,7 @@ echo /sbin/mdev > /proc/sys/kernel/hotplug
 # mdev to scan the /sys dir for information about current devices
 mdev -s
 EOF
+    chmod +x $ROOTFS_PATH/etc/init.d/rcS
 }
 
 # configure user accounts
@@ -102,7 +103,6 @@ EOF
 
 # Set the number of parallel jobs for make
 export MAKEFLAGS="-j$(nproc)"
-export ARCH=arm
 
 ROOTFS_PATH=../rootfs
 BUSYBOX_PATH=../busybox
@@ -114,7 +114,7 @@ if [ -d "$ROOTFS_PATH" ]; then
 fi
 
 # Create the directory structure
-mkdir -p $ROOTFS_PATH/{bin,dev,etc,home,lib,proc,root,sbin,sys,tmp,usr/{bin,lib,sbin},var}
+mkdir -p $ROOTFS_PATH/{bin,dev,etc,home,lib,proc,root,sbin,sys,tmp,usr/{bin,lib,sbin},var/log}
 
 # populate with busybox basic utils
 if [ ! -d "$BUSYBOX_PATH" ]; then
@@ -145,6 +145,10 @@ build_beaglebone() {
     arm-cortex_a8-linux-gnueabihf-ldd --root $SYSROOT/lib $ROOTFS_PATH/bin/busybox | grep "=> /" | awk '{print $3}' | while read -r lib; do
         cp -a "$SYSROOT/$lib" "$ROOTFS_PATH/lib"
     done
+
+    # create essential node
+    sudo mknod -m 666 $ROOTFS_PATH/dev/null c 1 3
+    sudo mknod -m 600 $ROOTFS_PATH/dev/console c 5 1
 
     config_init_procedure
     config_user_accounts
@@ -194,7 +198,9 @@ else
   exit 1
 fi
 
-find $ROOTFS_PATH | cpio -H newc -ov --owner root:root > ../initramfs.cpio
+# Create initramfs
+cd $ROOTFS_PATH
+find . | cpio -H newc -ov --owner root:root > ../initramfs.cpio
 gzip ../initramfs.cpio
 mkimage -A arm -O linux -T ramdisk -d ../initramfs.cpio.gz ../uRamdisk
 rm ../initramfs.cpio.gz
@@ -221,3 +227,4 @@ else
 fi
 
 genext2fs -b 18432 -d $ROOTFS_PATH -U ../rootfs.ext2
+
