@@ -3,4 +3,7 @@ kernel-build
 u-boot
 u-boot-build
 ctng
+rootfs*
+busybox
+uRamdisk
 
