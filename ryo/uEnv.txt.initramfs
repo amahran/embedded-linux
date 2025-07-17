@@ -1,0 +1,6 @@
+fatload mmc 0:1 0x80200000 zImage
+fatload mmc 0:1 0x80f00000 am335x-boneblack.dtb
+fatload mmc 0:1 0x81000000 uRamdisk
+setenv bootargs console=ttyO0,115200 rdinit=/sbin/init
+bootz 0x80200000 0x81000000 0x80f00000
+
